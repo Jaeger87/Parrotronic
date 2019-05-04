@@ -6,13 +6,86 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
+
+
+
+    <android.support.constraint.Guideline
+        android:id="@+id/beginDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.15" />
+
+
+
+    <Switch
+        android:id="@+id/eyesSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:checked="false"
+        android:text="Eyes"
+        app:layout_constraintStart_toStartOf="@id/guidelineHalfDisplay"
+        app:layout_constraintTop_toTopOf="@id/beginDisplay" />
+
+    <TextView
+        android:id="@+id/ManualText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:text="Manual mode"
+        app:layout_constraintLeft_toLeftOf="@id/guidelineHalfDisplay"
+        app:layout_constraintTop_toBottomOf="@+id/eyesSwitch" />
+
+    <SeekBar
+        android:id="@+id/mouthBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:max="1023"
+        android:min="0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ManualText" />
+
+    <TextView
+        android:id="@+id/mouthValueText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/backsquare"
+        android:textSize="16sp"
+        android:minEms="3"
+        android:maxEms="3"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingEnd="7dp"
+        android:paddingStart="8dp"
+        android:text="0"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/mouthBar"
+        app:layout_constraintStart_toStartOf="@id/guidelineHalfDisplay"/>
+
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guidelineAudioZone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.60" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guidelineHalfDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.38" />
+
+
 
 </android.support.constraint.ConstraintLayout>
