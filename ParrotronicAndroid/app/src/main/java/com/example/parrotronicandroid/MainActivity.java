@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -49,6 +50,12 @@ public class MainActivity extends AppCompatActivity {
     @ViewById(R.id.eyesSwitch)
     Switch eyes;
 
+    @ViewById(R.id.micfab)
+    FloatingActionButton micFab;
+
+    @ViewById(R.id.playFab)
+    FloatingActionButton playFab;
+
     @AfterViews
     void AfterViews(){
         eyes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -80,8 +87,9 @@ public class MainActivity extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
+        recordButton = new RecordButton(this, micFab);
 
-        recordButton = new RecordButton(this);
+        playButton = new PlayButton(this, playFab);
 
     }
 
@@ -173,47 +181,48 @@ public class MainActivity extends AppCompatActivity {
         recorder = null;
     }
 
-    class RecordButton extends android.support.v7.widget.AppCompatButton {
+    class RecordButton{
+        Context ctx;
         boolean mStartRecording = true;
 
-        OnClickListener clicker = new OnClickListener() {
+        View.OnClickListener clicker = new View.OnClickListener() {
             public void onClick(View v) {
                 onRecord(mStartRecording);
                 if (mStartRecording) {
-                    setText("Stop recording");
+                    Toast.makeText(ctx, "recording", Toast.LENGTH_SHORT).show();
                 } else {
-                    setText("Start recording");
+                    Toast.makeText(ctx, "stop", Toast.LENGTH_SHORT).show();
                 }
                 mStartRecording = !mStartRecording;
             }
         };
 
-        public RecordButton(Context ctx) {
-            super(ctx);
-            setText("Start recording");
-            setOnClickListener(clicker);
+        public RecordButton(Context ctx, FloatingActionButton button) {
+            this.ctx = ctx;
+            button.setOnClickListener(clicker);
         }
     }
 
-    class PlayButton extends android.support.v7.widget.AppCompatButton {
+    class PlayButton{
         boolean mStartPlaying = true;
+        Context ctx;
 
-        OnClickListener clicker = new OnClickListener() {
+
+        View.OnClickListener clicker = new View.OnClickListener() {
             public void onClick(View v) {
                 onPlay(mStartPlaying);
                 if (mStartPlaying) {
-                    setText("Stop playing");
+                    Toast.makeText(ctx, "play", Toast.LENGTH_SHORT).show();
                 } else {
-                    setText("Start playing");
+                    Toast.makeText(ctx, "pausa", Toast.LENGTH_SHORT).show();
                 }
                 mStartPlaying = !mStartPlaying;
             }
         };
 
-        public PlayButton(Context ctx) {
-            super(ctx);
-            setText("Start playing");
-            setOnClickListener(clicker);
+        public PlayButton(Context ctx, FloatingActionButton button) {
+            this.ctx = ctx;
+            button.setOnClickListener(clicker);
         }
     }
 
