@@ -22,6 +22,10 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @EActivity(R.layout.activity_main)
@@ -55,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
 
     @ViewById(R.id.playFab)
     FloatingActionButton playFab;
+
+
+    @ViewById(R.id.waveform)
+    PlayerVisualizerView waveform;
 
     @AfterViews
     void AfterViews(){
@@ -179,6 +187,9 @@ public class MainActivity extends AppCompatActivity {
         recorder.stop();
         recorder.release();
         recorder = null;
+
+        waveform.updateVisualizer(fileToBytes(new File(fileName)));
+        //todo passare qui file a view
     }
 
     class RecordButton{
@@ -224,6 +235,22 @@ public class MainActivity extends AppCompatActivity {
             this.ctx = ctx;
             button.setOnClickListener(clicker);
         }
+    }
+
+
+    public static byte[] fileToBytes(File file) {
+        int size = (int) file.length();
+        byte[] bytes = new byte[size];
+        try {
+            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+            buf.read(bytes, 0, bytes.length);
+            buf.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bytes;
     }
 
 }
