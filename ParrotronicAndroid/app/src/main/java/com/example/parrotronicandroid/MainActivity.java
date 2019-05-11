@@ -156,6 +156,21 @@ public class MainActivity extends AppCompatActivity {
         try {
             player.setDataSource(fileName);
             player.prepare();
+
+
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+
+                    playFab.setImageResource(R.drawable.ic_play);
+                    // stop streaming vocal note
+                    if (player != null) {
+                        stopPlaying();
+                    }
+                    playButton.mStartPlaying = true;
+                }
+            });
+
             player.start();
         } catch (IOException e) {
             Log.e(LOG_TAG, "prepare() failed");
@@ -189,7 +204,6 @@ public class MainActivity extends AppCompatActivity {
         recorder = null;
 
         waveform.updateVisualizer(fileToBytes(new File(fileName)));
-        //todo passare qui file a view
     }
 
     class RecordButton{
@@ -200,9 +214,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 onRecord(mStartRecording);
                 if (mStartRecording) {
-                    Toast.makeText(ctx, "recording", Toast.LENGTH_SHORT).show();
+                    micFab.setImageResource(R.drawable.ic_stop);
                 } else {
-                    Toast.makeText(ctx, "stop", Toast.LENGTH_SHORT).show();
+                    micFab.setImageResource(R.drawable.ic_mic);
                 }
                 mStartRecording = !mStartRecording;
             }
@@ -216,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
 
     class PlayButton{
         boolean mStartPlaying = true;
+        boolean mPausePlaying = false;
         Context ctx;
 
 
@@ -223,9 +238,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 onPlay(mStartPlaying);
                 if (mStartPlaying) {
-                    Toast.makeText(ctx, "play", Toast.LENGTH_SHORT).show();
+                    playFab.setImageResource(R.drawable.ic_pause);
                 } else {
-                    Toast.makeText(ctx, "pausa", Toast.LENGTH_SHORT).show();
+                    playFab.setImageResource(R.drawable.ic_play);
                 }
                 mStartPlaying = !mStartPlaying;
             }
