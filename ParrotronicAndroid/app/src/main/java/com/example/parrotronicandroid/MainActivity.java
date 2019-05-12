@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -44,6 +45,11 @@ public class MainActivity extends AppCompatActivity {
     private String [] permissions = {Manifest.permission.RECORD_AUDIO};
 
     private static final String LOG_TAG = "MainParrot";
+
+
+    private WaveFormUpdater waveFormUpdater;
+
+    private Handler mWaveFormUpdateHandler;
 
     @ViewById(R.id.mouthValueText)
     TextView mouthValueTextView;
@@ -128,6 +134,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        stopPlaying();
+    }
+
+
 
     private void eyesSwitchPressed()
     {
@@ -147,39 +161,54 @@ public class MainActivity extends AppCompatActivity {
         if (start) {
             startPlaying();
         } else {
-            stopPlaying();
+            pausePlaying();
         }
     }
 
     private void startPlaying() {
-        player = new MediaPlayer();
-        try {
-            player.setDataSource(fileName);
-            player.prepare();
+
+        if(player == null) {
+            player = new MediaPlayer();
+            try {
+                player.setDataSource(fileName);
+                player.prepare();
 
 
-            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
+                player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
 
-                    playFab.setImageResource(R.drawable.ic_play);
-                    // stop streaming vocal note
-                    if (player != null) {
-                        stopPlaying();
+                        playFab.setImageResource(R.drawable.ic_play);
+                        // stop streaming vocal note
+                        if (player != null) {
+                            stopPlaying();
+                        }
+                        playButton.mStartPlaying = true;
                     }
-                    playButton.mStartPlaying = true;
-                }
-            });
+                });
 
-            player.start();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
+
+                mWaveFormUpdateHandler = new Handler();
+                waveFormUpdater = new WaveFormUpdater(waveform, player, mWaveFormUpdateHandler);
+
+                mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 0);
+
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "prepare() failed");
+            }
         }
+
+        player.start();
     }
 
     private void stopPlaying() {
+        mWaveFormUpdateHandler.removeCallbacks(waveFormUpdater);
         player.release();
         player = null;
+    }
+
+    private void pausePlaying() {
+        player.pause();
     }
 
     private void startRecording() {
@@ -230,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
 
     class PlayButton{
         boolean mStartPlaying = true;
-        boolean mPausePlaying = false;
         Context ctx;
 
 
@@ -243,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
                     playFab.setImageResource(R.drawable.ic_play);
                 }
                 mStartPlaying = !mStartPlaying;
+
             }
         };
 

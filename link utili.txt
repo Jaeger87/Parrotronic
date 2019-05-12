@@ -1,0 +1,6 @@
+https://github.com/Cleveroad/WaveInApp
+https://github.com/Yalantis/Horizon
+https://github.com/DrKLO/Telegram
+https://stackoverflow.com/questions/6317842/how-to-draw-waveform-of-androids-music-player
+https://stackoverflow.com/questions/38744579/show-waveform-of-audio#
+https://material.io/tools/color/#!/?view.left=0&view.right=0&primary.color=616161&secondary.color=DD2C00
