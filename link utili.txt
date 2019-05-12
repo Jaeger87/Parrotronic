@@ -4,3 +4,9 @@ https://github.com/DrKLO/Telegram
 https://stackoverflow.com/questions/6317842/how-to-draw-waveform-of-androids-music-player
 https://stackoverflow.com/questions/38744579/show-waveform-of-audio#
 https://material.io/tools/color/#!/?view.left=0&view.right=0&primary.color=616161&secondary.color=DD2C00
+http://writingminds.github.io/ffmpeg-android-java/
+https://stackoverflow.com/questions/8872975/how-to-use-getmaxamplitude-android
+https://en.wikipedia.org/wiki/Sampling_(signal_processing)#Sampling_rate
+https://en.wikipedia.org/wiki/Bit_rate
+https://sound.stackexchange.com/questions/20077/sampling-frequency
+https://stackoverflow.com/questions/22431000/mediarecorder-getmaxamplitude-return-9000-as-the-max-value-on-my-phone-although

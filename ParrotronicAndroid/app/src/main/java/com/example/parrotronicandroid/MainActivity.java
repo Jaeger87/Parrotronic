@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -28,6 +27,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity {
@@ -44,8 +47,11 @@ public class MainActivity extends AppCompatActivity {
     private boolean permissionToRecordAccepted = false;
     private String [] permissions = {Manifest.permission.RECORD_AUDIO};
 
-    private static final String LOG_TAG = "MainParrot";
+    private static final String TAG = "MainParrot";
 
+    private ArrayList<Byte> amplitudeList;
+
+    private Timer _timer;
 
     private WaveFormUpdater waveFormUpdater;
 
@@ -72,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     @AfterViews
     void AfterViews(){
+
         eyes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 eyesSwitchPressed();
@@ -197,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
                 mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 0);
 
             } catch (IOException e) {
-                Log.e(LOG_TAG, "prepare() failed");
+                Log.e(TAG, "prepare() failed");
             }
         }
 
@@ -222,24 +229,74 @@ public class MainActivity extends AppCompatActivity {
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         recorder.setOutputFile(fileName);
+
+        recorder.setAudioSamplingRate(22050);
+        recorder.setAudioEncodingBitRate(128000);
+        recorder.setAudioChannels(2);
+
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        amplitudeList = new ArrayList<>();
+
+        _timer = new Timer();
+
+        _timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        int amplitude = recorder.getMaxAmplitude();
+                        Log.d(TAG, "" + amplitude);
+                        Log.i(TAG, "" + map(amplitude, 0, 32762,0,255));
+                        amplitudeList.add((byte)map(amplitude, 0, 32762,0,255));
+                    }
+                });
+            }
+        },200,100);
 
         try {
             recorder.prepare();
         } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
+            Log.e(TAG, "prepare() failed");
         }
 
         recorder.start();
     }
 
+
+    //Thank you processing
+    static public final float map(float value,
+                                  float istart,
+                                  float istop,
+                                  float ostart,
+                                  float ostop) {
+        return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
+    }
+
+
     private void stopRecording() {
+        _timer.cancel();
         recorder.stop();
         recorder.release();
         recorder = null;
 
-        waveform.updateVisualizer(fileToBytes(new File(fileName)));
+        waveform.updateVisualizer(convertBytes(amplitudeList));
+
+        Log.d(TAG, amplitudeList.toString());
     }
+
+
+    public static byte[] convertBytes(List<Byte> bytes)
+    {
+        byte[] ret = new byte[bytes.size()];
+        for (int i=0; i < ret.length; i++)
+        {
+            ret[i] = bytes.get(i).byteValue();
+        }
+        return ret;
+    }
+
 
     class RecordButton{
         Context ctx;
