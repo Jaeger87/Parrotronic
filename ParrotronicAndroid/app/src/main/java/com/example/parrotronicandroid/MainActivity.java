@@ -117,8 +117,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (player != null) {
-            player.release();
-            player = null;
+            if(!playButton.mStartPlaying) {
+                playButton.mStartPlaying = false;
+                playFab.callOnClick();
+            }
+            stopPlaying();
+
         }
     }
 
@@ -138,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy()
     {
         super.onDestroy();
-        stopPlaying();
     }
 
 
@@ -202,9 +205,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopPlaying() {
-        mWaveFormUpdateHandler.removeCallbacks(waveFormUpdater);
-        player.release();
-        player = null;
+        if(player != null) {
+            mWaveFormUpdateHandler.removeCallbacks(waveFormUpdater);
+            player.stop();
+            player.release();
+            player = null;
+        }
     }
 
     private void pausePlaying() {
