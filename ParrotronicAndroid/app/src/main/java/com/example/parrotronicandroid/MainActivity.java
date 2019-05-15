@@ -1,7 +1,10 @@
 package com.example.parrotronicandroid;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -9,7 +12,9 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -18,19 +23,20 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.parrotronicandroid.utilities.Constants;
+
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity {
@@ -57,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
 
     private Handler mWaveFormUpdateHandler;
 
+    //From Renato
+    private BluetoothConnectionService mBluetoothConnectionHead;
+    private Executor myExecutor;
+
     @ViewById(R.id.mouthValueText)
     TextView mouthValueTextView;
 
@@ -73,11 +83,16 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton playFab;
 
 
+    @ViewById(R.id.voiceCard)
+    CardView voiceCard;
+
     @ViewById(R.id.waveform)
     PlayerVisualizerView waveform;
 
     @AfterViews
     void AfterViews(){
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter((Constants.incomingMessageIntent)));
 
         eyes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -111,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
         recordButton = new RecordButton(this, micFab);
 
         playButton = new PlayButton(this, playFab);
+
+        myExecutor = Executors.newFixedThreadPool(7);
 
     }
 
@@ -345,19 +362,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static byte[] fileToBytes(File file) {
-        int size = (int) file.length();
-        byte[] bytes = new byte[size];
-        try {
-            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
-            buf.read(bytes, 0, bytes.length);
-            buf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+
+
+
+    BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int id = intent.getIntExtra(Constants.intentIDProp, 0);
+            String text = intent.getStringExtra("Message");
+            long currentTime = System.currentTimeMillis();
+
+            if(text.contains("ALI"))
+                return;
+
         }
-        return bytes;
-    }
+    };
 
 }
