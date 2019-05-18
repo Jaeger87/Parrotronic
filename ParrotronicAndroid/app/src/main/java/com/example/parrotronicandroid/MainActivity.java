@@ -1,6 +1,8 @@
 package com.example.parrotronicandroid;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +35,7 @@ import org.androidannotations.annotations.ViewById;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
@@ -66,6 +69,9 @@ public class MainActivity extends AppCompatActivity {
 
     //From Renato
     private BluetoothConnectionService mBluetoothConnectionHead;
+    private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothDevice mBTDeviceHead;
+
     private Executor myExecutor;
 
     @ViewById(R.id.mouthValueText)
@@ -132,8 +138,69 @@ public class MainActivity extends AppCompatActivity {
 
         myExecutor = Executors.newFixedThreadPool(7);
 
+
+        voiceCard.setOnLongClickListener(new View.OnLongClickListener() {
+            public boolean onLongClick(View v) {
+                Log.d(TAG, "lungo click"); //TODO pop up
+                return true;
+            }
+        });
+
+
+        connectionBluetooth();
+
     }
 
+
+    private void connectionBluetooth()
+    {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+        for(BluetoothDevice bt : pairedDevices)
+        {
+            Log.d(TAG, bt.getAddress());
+
+            if (bt.getAddress().equals(Constants.macHeadBT)) {
+                Log.d(TAG, bt.getName());
+
+                mBTDeviceHead = bt;
+                mBluetoothConnectionHead = new BluetoothConnectionService(MainActivity.this, Constants.HeadID);
+                startBTConnection(mBTDeviceHead, mBluetoothConnectionHead);
+            }
+
+        }
+    }
+
+    public void startBTConnection(BluetoothDevice device, BluetoothConnectionService connection)
+    {
+        connection.startClient(device);
+    }
+
+    // Create a BroadcastReceiver for ACTION_FOUND
+    private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            // When discovery finds a device
+            if (action.equals(mBluetoothAdapter.ACTION_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, mBluetoothAdapter.ERROR);
+
+                switch(state){
+                    case BluetoothAdapter.STATE_OFF:
+                        Log.d(TAG, "onReceive: STATE OFF");
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        Log.d(TAG, "mBroadcastReceiver1: STATE TURNING OFF");
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        Log.d(TAG, "mBroadcastReceiver1: STATE ON");
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        Log.d(TAG, "mBroadcastReceiver1: STATE TURNING ON");
+                        break;
+                }
+            }
+        }
+    };
 
     @Override
     public void onStop() {
@@ -171,6 +238,10 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         if(timeTask != null)
             timeTask.cancel(true);
+
+        unregisterReceiver(mBroadcastReceiver1);
+        unregisterReceiver(mReceiver);
+        mBluetoothConnectionHead.stopClient();
     }
 
 
