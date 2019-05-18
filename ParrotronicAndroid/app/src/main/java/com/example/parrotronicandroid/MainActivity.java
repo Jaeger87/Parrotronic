@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -30,7 +31,6 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Byte> amplitudeList;
 
     private Timer _timer;
+    private TimerForRecorder timeTask;
 
     private WaveFormUpdater waveFormUpdater;
 
@@ -82,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
     @ViewById(R.id.playFab)
     FloatingActionButton playFab;
 
+    @ViewById(R.id.durataVoice)
+    TextView durataVoice;
 
     @ViewById(R.id.voiceCard)
     CardView voiceCard;
@@ -96,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
         eyes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                eyesSwitchPressed();
+                eyesSwitchPressed(isChecked);
             }
         });
 
@@ -166,13 +169,15 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy()
     {
         super.onDestroy();
+        if(timeTask != null)
+            timeTask.cancel(true);
     }
 
 
 
-    private void eyesSwitchPressed()
+    private void eyesSwitchPressed(boolean isChecked)
     {
-        Toast.makeText(this, "premuto", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "premuto " + isChecked, Toast.LENGTH_LONG).show();
     }
 
 
@@ -264,13 +269,16 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         int amplitude = recorder.getMaxAmplitude();
-                        Log.d(TAG, "" + amplitude);
-                        Log.i(TAG, "" + map(amplitude, 0, 32762,0,255));
+                       // Log.d(TAG, "" + amplitude);
+                        //Log.i(TAG, "" + map(amplitude, 0, 32762,0,255));
                         amplitudeList.add((byte)map(amplitude, 0, 32762,0,255));
                     }
                 });
             }
         },200,100);
+
+        timeTask = new TimerForRecorder(durataVoice);
+        timeTask.executeOnExecutor(myExecutor);
 
         try {
             recorder.prepare();
@@ -297,6 +305,9 @@ public class MainActivity extends AppCompatActivity {
         recorder.stop();
         recorder.release();
         recorder = null;
+
+        timeTask.stopTimer();
+        timeTask = null;
 
         waveform.updateVisualizer(convertBytes(amplitudeList));
 
@@ -363,9 +374,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -378,5 +386,62 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+
+
+
+    public class TimerForRecorder extends AsyncTask<String, Integer, String> {
+
+        private TextView textView;
+        private boolean stop = false;
+
+        public TimerForRecorder(TextView textView)
+        {
+            this.textView = textView;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            long startTime = System.currentTimeMillis();
+            int seconds = 0;
+            int minutes = 0;
+            while(!stop)
+            {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                long timePassed = System.currentTimeMillis() - startTime;
+                timePassed /= 1000;
+                seconds = (int) timePassed % 60;
+                minutes = (int) timePassed / 60;
+
+            }
+            return (printNumberForTimer(minutes) + ":" + printNumberForTimer(seconds));
+        }
+
+        private String printNumberForTimer(int n)
+        {
+            if(n > 9)
+                return ""+n;
+            return "0"+n;
+        }
+
+        public void stopTimer()
+        {
+            stop = true;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            textView.setText(result);
+        }
+
+    }
 
 }
