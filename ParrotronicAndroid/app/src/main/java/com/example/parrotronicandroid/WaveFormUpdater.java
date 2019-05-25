@@ -11,6 +11,8 @@ public class WaveFormUpdater implements Runnable{
     private MediaPlayer player;
     private Handler mWaveFormUpdateHandler;
 
+
+
     public WaveFormUpdater(PlayerVisualizerView visualizerView, MediaPlayer player, Handler mWaveFormUpdateHandler)
     {
         this.visualizerView = visualizerView;
@@ -23,6 +25,8 @@ public class WaveFormUpdater implements Runnable{
         float percent = (player.getCurrentPosition()) / (float) player.getDuration();
         Log.d(TAG, "" + percent);
         visualizerView.updatePlayerPercent(percent);
-        mWaveFormUpdateHandler.postDelayed(this, 50);
+        mWaveFormUpdateHandler.postDelayed(this, 100);
+
+
     }
 }

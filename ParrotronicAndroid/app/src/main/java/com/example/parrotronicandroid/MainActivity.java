@@ -42,7 +42,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 @EActivity(R.layout.activity_main)
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
     private RecordButton recordButton = null;
     private PlayButton   playButton = null;
@@ -59,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainParrot";
 
     private ArrayList<Byte> amplitudeList;
+    private ArrayList<Integer> amplitudeAnalogicList;
+    private int amplitudePeriod = 100;
+    private int amplitudeDelay = 200;
+
 
     private Timer _timer;
     private TimerForRecorder timeTask;
@@ -294,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
                 mWaveFormUpdateHandler = new Handler();
                 waveFormUpdater = new WaveFormUpdater(waveform, player, mWaveFormUpdateHandler);
 
-                mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 0);
+                mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 200);
 
             } catch (IOException e) {
                 Log.e(TAG, "prepare() failed");
@@ -330,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         amplitudeList = new ArrayList<>();
-
+        amplitudeAnalogicList = new ArrayList<>();
         _timer = new Timer();
 
         _timer.schedule(new TimerTask() {
@@ -343,10 +347,11 @@ public class MainActivity extends AppCompatActivity {
                        // Log.d(TAG, "" + amplitude);
                         //Log.i(TAG, "" + map(amplitude, 0, 32762,0,255));
                         amplitudeList.add((byte)map(amplitude, 0, 32762,0,255));
+                        amplitudeAnalogicList.add((int)map(amplitude,0,32762,0,1023));
                     }
                 });
             }
-        },200,100);
+        },amplitudeDelay,amplitudePeriod);
 
         timeTask = new TimerForRecorder(durataVoice);
         timeTask.executeOnExecutor(myExecutor);
@@ -383,6 +388,7 @@ public class MainActivity extends AppCompatActivity {
         waveform.updateVisualizer(convertBytes(amplitudeList));
 
         Log.d(TAG, amplitudeList.toString());
+        Log.d(TAG, amplitudeAnalogicList.toString());
     }
 
 
@@ -394,6 +400,11 @@ public class MainActivity extends AppCompatActivity {
             ret[i] = bytes.get(i).byteValue();
         }
         return ret;
+    }
+
+    @Override
+    public void sendToHeadValueMouth(int value) {
+
     }
 
 
