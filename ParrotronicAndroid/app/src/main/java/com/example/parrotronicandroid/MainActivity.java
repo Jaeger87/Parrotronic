@@ -33,6 +33,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -118,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mouthValueTextView.setText(""+ progress);
+                sendToHeadValueMouth(progress, true);
             }
 
             @Override
@@ -253,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     private void eyesSwitchPressed(boolean isChecked)
     {
         Toast.makeText(this, "premuto " + isChecked, Toast.LENGTH_LONG).show();
+        sendToHeadEyes(isChecked);
     }
 
 
@@ -403,10 +406,31 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     }
 
     @Override
-    public void sendToHeadValueMouth(int value) {
+    public void sendToHeadValueMouth(int value, boolean thanos) {
 
+        if(mBluetoothConnectionHead == null)
+            return;
+
+        char thanosChar = 'T';
+
+        if(!thanos)
+            thanosChar = 'A';
+
+        mBluetoothConnectionHead.write(("M;" + thanosChar + ';' + value + "\n").getBytes(Charset.defaultCharset()));
     }
 
+    public void sendToHeadEyes(boolean onOff) {
+
+        if(mBluetoothConnectionHead == null)
+            return;
+
+        char eyesChar = '1';
+
+        if(!onOff)
+            eyesChar = '0';
+
+        mBluetoothConnectionHead.write(("E;" + eyesChar + "\n").getBytes(Charset.defaultCharset()));
+    }
 
     class RecordButton{
         Context ctx;
@@ -459,9 +483,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int id = intent.getIntExtra(Constants.intentIDProp, 0);
             String text = intent.getStringExtra("Message");
-            long currentTime = System.currentTimeMillis();
 
             if(text.contains("ALI"))
                 return;
