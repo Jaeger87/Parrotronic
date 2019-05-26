@@ -10,7 +10,7 @@ public class AudioNote {
     private ArrayList<Byte> amplitudeGraphicList;
     private ArrayList<Integer> amplitudeAnalogicList;
 
-    private String durate;
+    private String durata;
 
     public AudioNote()
     {
@@ -57,11 +57,11 @@ public class AudioNote {
         this.amplitudeAnalogicList = amplitudeAnalogicList;
     }
 
-    public String getDurate() {
-        return durate;
+    public String getDurata() {
+        return durata;
     }
 
-    public void setDurate(String durate) {
-        this.durate = durate;
+    public void setDurata(String durata) {
+        this.durata = durata;
     }
 }

@@ -34,13 +34,13 @@ import org.androidannotations.annotations.ViewById;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import static com.example.parrotronicandroid.utilities.StaticMethods.convertBytes;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity implements BTHeadActivity{
@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     @ViewById(R.id.waveform)
     PlayerVisualizerView waveform;
 
-    String currentNote;
 
     @AfterViews
     void AfterViews(){
@@ -358,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
             }
         },amplitudeDelay,amplitudePeriod);
 
-        timeTask = new TimerForRecorder(durataVoice);
+        timeTask = new TimerForRecorder(audioNote);
         timeTask.executeOnExecutor(myExecutor);
 
         try {
@@ -384,25 +383,19 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     private void stopRecording() {
         _timer.cancel();
         recorder.stop();
+        timeTask.stopTimer();
         recorder.release();
         recorder = null;
 
-        timeTask.stopTimer();
+
         timeTask = null;
 
         waveform.updateVisualizer(convertBytes(audioNote.getAmplitudeGraphicList()));
+
     }
 
 
-    public static byte[] convertBytes(List<Byte> bytes)
-    {
-        byte[] ret = new byte[bytes.size()];
-        for (int i=0; i < ret.length; i++)
-        {
-            ret[i] = bytes.get(i).byteValue();
-        }
-        return ret;
-    }
+
 
     @Override
     public void sendToHeadValueMouth(int value, boolean thanos) {
@@ -501,12 +494,12 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
     public class TimerForRecorder extends AsyncTask<String, Integer, String> {
 
-        private TextView textView;
+        private AudioNote audioNote;
         private boolean stop = false;
 
-        public TimerForRecorder(TextView textView)
+        public TimerForRecorder(AudioNote audioNote)
         {
-            this.textView = textView;
+            this.audioNote = audioNote;
         }
 
         @Override
@@ -549,7 +542,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
         @Override
         protected void onPostExecute(String result) {
-            textView.setText(result);
+            audioNote.setDurata(result);
+            durataVoice.setText(audioNote.getDurata());
         }
 
 

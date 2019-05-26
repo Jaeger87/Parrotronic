@@ -5,8 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
-public class staticMethods {
+public class StaticMethods {
 
     public static byte[] fileToBytes(File file) {
         int size = (int) file.length();
@@ -21,5 +22,15 @@ public class staticMethods {
             e.printStackTrace();
         }
         return bytes;
+    }
+
+    public static byte[] convertBytes(List<Byte> bytes)
+    {
+        byte[] ret = new byte[bytes.size()];
+        for (int i=0; i < ret.length; i++)
+        {
+            ret[i] = bytes.get(i).byteValue();
+        }
+        return ret;
     }
 }
