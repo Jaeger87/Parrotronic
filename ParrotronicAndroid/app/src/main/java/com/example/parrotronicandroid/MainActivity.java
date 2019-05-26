@@ -52,15 +52,12 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     private MediaPlayer player = null;
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
-    private static String fileName = null;
 
     private boolean permissionToRecordAccepted = false;
     private String [] permissions = {Manifest.permission.RECORD_AUDIO};
 
     private static final String TAG = "MainParrot";
 
-    private ArrayList<Byte> amplitudeList;
-    private ArrayList<Integer> amplitudeAnalogicList;
     private int amplitudePeriod = 100;
     private int amplitudeDelay = 200;
 
@@ -71,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     private WaveFormUpdater waveFormUpdater;
 
     private Handler mWaveFormUpdateHandler;
+
+    private AudioNote audioNote;
 
     //From Renato
     private BluetoothConnectionService mBluetoothConnectionHead;
@@ -103,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     @ViewById(R.id.waveform)
     PlayerVisualizerView waveform;
 
+    String currentNote;
+
     @AfterViews
     void AfterViews(){
 
@@ -133,8 +134,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
             }
         });
 
-        fileName = getExternalCacheDir().getAbsolutePath();
-        fileName += "/audiorecordtest.3gp";
+       // fileName = getExternalCacheDir().getAbsolutePath();
+        //fileName += "/audiorecordtest.3gp";
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
@@ -269,18 +270,18 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
     private void onPlay(boolean start) {
         if (start) {
-            startPlaying();
+            playAudioNote(audioNote);
         } else {
             pausePlaying();
         }
     }
 
-    private void startPlaying() {
+    private void startPlaying(String filename) {
 
         if(player == null) {
             player = new MediaPlayer();
             try {
-                player.setDataSource(fileName);
+                player.setDataSource(filename);
                 player.prepare();
 
 
@@ -328,7 +329,10 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        recorder.setOutputFile(fileName);
+
+        audioNote = new AudioNote(getExternalCacheDir().getAbsolutePath() + "/audiorecordtest.3gp");
+
+        recorder.setOutputFile(audioNote.getFileName());
 
         recorder.setAudioSamplingRate(22050);
         recorder.setAudioEncodingBitRate(128000);
@@ -336,8 +340,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
-        amplitudeList = new ArrayList<>();
-        amplitudeAnalogicList = new ArrayList<>();
         _timer = new Timer();
 
         _timer.schedule(new TimerTask() {
@@ -349,8 +351,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
                         int amplitude = recorder.getMaxAmplitude();
                        // Log.d(TAG, "" + amplitude);
                         //Log.i(TAG, "" + map(amplitude, 0, 32762,0,255));
-                        amplitudeList.add((byte)map(amplitude, 0, 32762,0,255));
-                        amplitudeAnalogicList.add((int)map(amplitude,0,32762,0,1023));
+                        audioNote.addToAmplitudeGraphicList((byte)map(amplitude, 0, 32762,0,255));
+                        audioNote.addToAmplitudeAnalogicList((int)map(amplitude,0,32762,0,1023));
                     }
                 });
             }
@@ -388,10 +390,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         timeTask.stopTimer();
         timeTask = null;
 
-        waveform.updateVisualizer(convertBytes(amplitudeList));
-
-        Log.d(TAG, amplitudeList.toString());
-        Log.d(TAG, amplitudeAnalogicList.toString());
+        waveform.updateVisualizer(convertBytes(audioNote.getAmplitudeGraphicList()));
     }
 
 
@@ -492,6 +491,13 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     };
 
 
+    public void playAudioNote(AudioNote note)
+    {
+        //String currentNote = note.getFileName();
+        //playFab.callOnClick();
+        startPlaying(note.getFileName());
+    }
+
 
     public class TimerForRecorder extends AsyncTask<String, Integer, String> {
 
@@ -545,6 +551,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         protected void onPostExecute(String result) {
             textView.setText(result);
         }
+
+
 
     }
 
