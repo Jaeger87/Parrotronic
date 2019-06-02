@@ -10,23 +10,32 @@ public class WaveFormUpdater implements Runnable{
     private PlayerVisualizerView visualizerView;
     private MediaPlayer player;
     private Handler mWaveFormUpdateHandler;
+    AudioNote note;
+    BTHeadActivity activity;
 
 
 
-    public WaveFormUpdater(PlayerVisualizerView visualizerView, MediaPlayer player, Handler mWaveFormUpdateHandler)
+    public WaveFormUpdater(PlayerVisualizerView visualizerView, MediaPlayer player, Handler mWaveFormUpdateHandler, AudioNote note, BTHeadActivity activity)
     {
         this.visualizerView = visualizerView;
         this.player = player;
         this.mWaveFormUpdateHandler = mWaveFormUpdateHandler;
+        this.note = note;
+        this.activity = activity;
     }
+
+
 
     @Override
     public void run() {
         float percent = (player.getCurrentPosition()) / (float) player.getDuration();
         Log.d(TAG, "" + percent);
         visualizerView.updatePlayerPercent(percent);
-        mWaveFormUpdateHandler.postDelayed(this, 100);
 
+        int index = (int)((note.getAmplitudeAnalogicList().size() - 1 ) * percent );
+
+        activity.sendToHeadValueMouth(note.getAmplitudeAnalogicList().get(index),false);
+        mWaveFormUpdateHandler.postDelayed(this, MainActivity.amplitudePeriod);
 
     }
 }

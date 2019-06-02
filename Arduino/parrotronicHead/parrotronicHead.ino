@@ -11,32 +11,42 @@ struct ServoValues {
 };
 
 ServoValues mouthServo;
+
+#include <Servo.h>
+
+Servo myservo;
+
 const char eyesC = 'E';
 const char mouthC = 'M';
 
 const char thanos = 'T';
 const char eyesOn = '1';
 
-const int eyesPin =  13; //poi cambiamo
+const int rightEyePin =  5; //poi cambiamo
+const int leftEyePin =  6; //poi cambiamo
+
+const int servoTreshold = 6;
 
 int aliveCounter = 0;
 const byte aliveTrigger = 10;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.setTimeout(20);
 
-  pinMode(eyesPin, OUTPUT);
+  pinMode(rightEyePin, OUTPUT);
+  pinMode(leftEyePin, OUTPUT);
 
-  mouthServo.minValue = 2400;
-  mouthServo.maxValue = 7200;
-  mouthServo.channel = 5;
+
+  mouthServo.minValue = 30;
+  mouthServo.maxValue = 70;
+  mouthServo.channel = 3;
   mouthServo.servoName = "Bocca";
   mouthServo.mirror = true;
   mouthServo.stopAndGo = true;
   mouthServo.shutDownWhen = 50;
 
-
+  myservo.attach(mouthServo.channel);
 }
 //formato messaggi
 //M;T;500 bocca;OkThanos;valore
@@ -74,9 +84,16 @@ void loop() {
 void eyesMessage(bool onOff)
 {
   if (onOff)
-    digitalWrite(eyesPin, HIGH);
+  {
+    digitalWrite(rightEyePin, HIGH);
+    digitalWrite(leftEyePin, HIGH);
+  }
   else
-    digitalWrite(eyesPin, LOW);
+  {
+    digitalWrite(rightEyePin, LOW);
+    digitalWrite(leftEyePin, LOW);
+  }
+    
 }
 
 void mouthMessage(String message)
@@ -85,7 +102,11 @@ void mouthMessage(String message)
   String valueString = getValueStringSplitter(message, ';', 2);
   int value = valueString.toInt();
 
-  mouthServo.lastPosition = value;
+  if(abs(mouthServo.lastPosition - value) > servoTreshold)
+  {
+    mouthServo.lastPosition = value;
+    myservo.write(analogServoConversion(value, mouthServo));
+  }
 }
 
 String getValueStringSplitter(String data, char separator, int index)

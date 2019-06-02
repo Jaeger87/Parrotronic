@@ -58,8 +58,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
     private static final String TAG = "MainParrot";
 
-    private int amplitudePeriod = 100;
-    private int amplitudeDelay = 200;
+    public static final int amplitudePeriod = 70;
+    public static final int amplitudeDelay = 170;
 
 
     private Timer _timer;
@@ -299,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
 
                 mWaveFormUpdateHandler = new Handler();
-                waveFormUpdater = new WaveFormUpdater(waveform, player, mWaveFormUpdateHandler);
+                waveFormUpdater = new WaveFormUpdater(waveform, player, mWaveFormUpdateHandler, audioNote, this);
 
                 mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 200);
 
@@ -408,7 +408,10 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         if(!thanos)
             thanosChar = 'A';
 
-        mBluetoothConnectionHead.write(("M;" + thanosChar + ';' + value + "\n").getBytes(Charset.defaultCharset()));
+        Log.d("BTHead", "M;" + thanosChar + ';' + value + "\n");
+
+        if(mBluetoothConnectionHead != null)
+            mBluetoothConnectionHead.write(("M;" + thanosChar + ';' + value + "\n").getBytes(Charset.defaultCharset()));
     }
 
     public void sendToHeadEyes(boolean onOff) {
