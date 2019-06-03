@@ -133,9 +133,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
             }
         });
 
-       // fileName = getExternalCacheDir().getAbsolutePath();
-        //fileName += "/audiorecordtest.3gp";
-
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
         recordButton = new RecordButton(this, micFab);
@@ -299,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
 
                 mWaveFormUpdateHandler = new Handler();
-                waveFormUpdater = new WaveFormUpdater(waveform, player, mWaveFormUpdateHandler, audioNote, this);
+                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this);
 
                 mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 200);
 
@@ -317,11 +314,14 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
             player.stop();
             player.release();
             player = null;
+            micFab.setImageResource(R.drawable.ic_mic);
+            audioNote.getPlayerVisualizerView().updatePlayerPercent(0);
         }
     }
 
     private void pausePlaying() {
         player.pause();
+        micFab.setImageResource(R.drawable.ic_mic);
     }
 
     private void startRecording() {
@@ -329,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 
-        audioNote = new AudioNote(getExternalCacheDir().getAbsolutePath() + "/audiorecordtest.3gp");
+        audioNote = new AudioNote(getExternalCacheDir().getAbsolutePath() + "/audiorecordtest.3gp", waveform);
 
         recorder.setOutputFile(audioNote.getFileName());
 
@@ -433,7 +433,21 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
         View.OnClickListener clicker = new View.OnClickListener() {
             public void onClick(View v) {
+
+                if(!playButton.mStartPlaying)
+                {
+                    stopPlaying();
+
+                    playFab.setImageResource(R.drawable.ic_play);
+                    playButton.mStartPlaying = !playButton.mStartPlaying;
+                    return;
+                }
+
+
                 onRecord(mStartRecording);
+
+
+
                 if (mStartRecording) {
                     micFab.setImageResource(R.drawable.ic_stop);
                 } else {
@@ -459,6 +473,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
                 onPlay(mStartPlaying);
                 if (mStartPlaying) {
                     playFab.setImageResource(R.drawable.ic_pause);
+                    micFab.setImageResource(R.drawable.ic_stop);
                 } else {
                     playFab.setImageResource(R.drawable.ic_play);
                 }

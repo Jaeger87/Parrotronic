@@ -10,6 +10,8 @@ public class AudioNote {
     private ArrayList<Byte> amplitudeGraphicList;
     private ArrayList<Integer> amplitudeAnalogicList;
 
+    private PlayerVisualizerView playerVisualizerView;
+
     private String durata;
 
     public AudioNote()
@@ -17,11 +19,12 @@ public class AudioNote {
 
     }
 
-    public AudioNote(String fileName)
+    public AudioNote(String fileName, PlayerVisualizerView playerVisualizerView)
     {
         this.fileName = fileName;
         amplitudeGraphicList = new ArrayList<>();
         amplitudeAnalogicList = new ArrayList<>();
+        this.playerVisualizerView = playerVisualizerView;
     }
 
 
@@ -42,7 +45,13 @@ public class AudioNote {
         this.amplitudeGraphicList = amplitudeGraphicList;
     }
 
+    public PlayerVisualizerView getPlayerVisualizerView() {
+        return playerVisualizerView;
+    }
 
+    public void setPlayerVisualizerView(PlayerVisualizerView playerVisualizerView) {
+        this.playerVisualizerView = playerVisualizerView;
+    }
 
     public ArrayList<Integer> getAmplitudeAnalogicList() {
         return amplitudeAnalogicList;
