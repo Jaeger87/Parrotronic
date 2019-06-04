@@ -9,17 +9,19 @@ public class WaveFormUpdater implements Runnable{
     private static final String TAG = "WaveFormUpdater";
     private MediaPlayer player;
     private Handler mWaveFormUpdateHandler;
+    PlayerVisualizerView playerVisualizerView;
     AudioNote note;
     BTHeadActivity activity;
 
 
 
-    public WaveFormUpdater(MediaPlayer player, Handler mWaveFormUpdateHandler, AudioNote note, BTHeadActivity activity)
+    public WaveFormUpdater(MediaPlayer player, Handler mWaveFormUpdateHandler, AudioNote note, BTHeadActivity activity, PlayerVisualizerView playerVisualizerView)
     {
         this.player = player;
         this.mWaveFormUpdateHandler = mWaveFormUpdateHandler;
         this.note = note;
         this.activity = activity;
+        this.playerVisualizerView = playerVisualizerView;
     }
 
 
@@ -27,8 +29,7 @@ public class WaveFormUpdater implements Runnable{
     @Override
     public void run() {
         float percent = (player.getCurrentPosition()) / (float) player.getDuration();
-        Log.d(TAG, "" + percent);
-        note.getPlayerVisualizerView().updatePlayerPercent(percent);
+        playerVisualizerView.updatePlayerPercent(percent);
 
         int index = (int)((note.getAmplitudeAnalogicList().size() - 1 ) * percent );
 

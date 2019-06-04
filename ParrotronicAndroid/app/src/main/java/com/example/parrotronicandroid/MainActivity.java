@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
 
                 mWaveFormUpdateHandler = new Handler();
-                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this);
+                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this, waveform);
 
                 mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 200);
 
@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
             player.release();
             player = null;
             micFab.setImageResource(R.drawable.ic_mic);
-            audioNote.getPlayerVisualizerView().updatePlayerPercent(0);
+            waveform.updatePlayerPercent(0);
         }
     }
 
@@ -329,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 
-        audioNote = new AudioNote(getExternalCacheDir().getAbsolutePath() + "/audiorecordtest.3gp", waveform);
+        audioNote = new AudioNote(getExternalCacheDir().getAbsolutePath() + "/audiorecordtest.3gp");
 
         recorder.setOutputFile(audioNote.getFileName());
 
