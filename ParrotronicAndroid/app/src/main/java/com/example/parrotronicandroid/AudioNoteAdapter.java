@@ -19,12 +19,15 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
     private List<AudioNote> mData;
     private LayoutInflater mInflater;
 
-    private Context ctx;
+    private PlayerActivity activity;
 
-    public AudioNoteAdapter(List<AudioNote> mData, Context ctx)
+    private ViewHolder currentViewHolderPlaying;
+
+    public AudioNoteAdapter(List<AudioNote> mData, PlayerActivity activity, Context context)
     {
+        this.mInflater = LayoutInflater.from(context);
         this.mData = mData;
-        this.ctx = ctx;
+        this.activity = activity;
     }
 
 
@@ -37,7 +40,7 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        viewHolder.audioNote = mData.get(i);
+        viewHolder.bindAudioNote(mData.get(i));
     }
 
     @Override
@@ -52,6 +55,7 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
         TextView durateTextView;
         FloatingActionButton playFab;
 
+        PlayButton playButton;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -60,6 +64,7 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
             playFab = itemView.findViewById(R.id.playFab);
             durateTextView = itemView.findViewById(R.id.durataVoice);
             playerVisualizerView = itemView.findViewById(R.id.waveform);
+            playButton = new PlayButton(playFab);
         }
 
         void bindAudioNote(AudioNote audioNote)
@@ -67,6 +72,27 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
             this.audioNote = audioNote;
             durateTextView.setText(audioNote.getDurata());
             playerVisualizerView.updateVisualizer(convertBytes(audioNote.getAmplitudeGraphicList()));
+        }
+
+
+        class PlayButton{
+            boolean mStartPlaying = true;
+            View.OnClickListener clicker = new View.OnClickListener() {
+                public void onClick(View v) {
+                    activity.onPlay(mStartPlaying, audioNote);
+                    if (mStartPlaying) {
+                        playFab.setImageResource(R.drawable.ic_pause);
+                    } else {
+                        playFab.setImageResource(R.drawable.ic_play);
+                    }
+                    mStartPlaying = !mStartPlaying;
+
+                }
+            };
+
+            public PlayButton(FloatingActionButton button) {
+                button.setOnClickListener(clicker);
+            }
         }
     }
 

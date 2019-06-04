@@ -10,3 +10,4 @@ https://en.wikipedia.org/wiki/Sampling_(signal_processing)#Sampling_rate
 https://en.wikipedia.org/wiki/Bit_rate
 https://sound.stackexchange.com/questions/20077/sampling-frequency
 https://stackoverflow.com/questions/22431000/mediarecorder-getmaxamplitude-return-9000-as-the-max-value-on-my-phone-although
+https://stackoverflow.com/questions/27845069/add-a-new-item-to-recyclerview-programmatically

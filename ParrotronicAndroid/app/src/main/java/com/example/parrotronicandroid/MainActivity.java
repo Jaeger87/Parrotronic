@@ -34,6 +34,7 @@ import org.androidannotations.annotations.ViewById;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -43,7 +44,7 @@ import java.util.concurrent.Executors;
 import static com.example.parrotronicandroid.utilities.StaticMethods.convertBytes;
 
 @EActivity(R.layout.activity_main)
-public class MainActivity extends AppCompatActivity implements BTHeadActivity{
+public class MainActivity extends AppCompatActivity implements BTHeadActivity, PlayerActivity{
 
     private RecordButton recordButton = null;
     private PlayButton   playButton = null;
@@ -70,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     private Handler mWaveFormUpdateHandler;
 
     private AudioNote audioNote;
+
+    private List<AudioNote> audioNotes;
+    private AudioNoteAdapter mAdapter;
 
     //From Renato
     private BluetoothConnectionService mBluetoothConnectionHead;
@@ -264,9 +268,10 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         }
     }
 
-    private void onPlay(boolean start) {
+    public void onPlay(boolean start, AudioNote audioNote) {
         if (start) {
-            playAudioNote(audioNote);
+            micFab.setImageResource(R.drawable.ic_stop);
+            startPlaying(audioNote.getFileName());
         } else {
             pausePlaying();
         }
@@ -308,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         player.start();
     }
 
-    private void stopPlaying() {
+    public void stopPlaying() {
         if(player != null) {
             mWaveFormUpdateHandler.removeCallbacks(waveFormUpdater);
             player.stop();
@@ -319,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         }
     }
 
-    private void pausePlaying() {
+    public void pausePlaying() {
         player.pause();
         micFab.setImageResource(R.drawable.ic_mic);
     }
@@ -467,13 +472,11 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         boolean mStartPlaying = true;
         Context ctx;
 
-
         View.OnClickListener clicker = new View.OnClickListener() {
             public void onClick(View v) {
-                onPlay(mStartPlaying);
+                onPlay(mStartPlaying, audioNote);
                 if (mStartPlaying) {
                     playFab.setImageResource(R.drawable.ic_pause);
-                    micFab.setImageResource(R.drawable.ic_stop);
                 } else {
                     playFab.setImageResource(R.drawable.ic_play);
                 }
@@ -489,7 +492,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
     }
 
 
-
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -501,13 +503,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
         }
     };
 
-
-    public void playAudioNote(AudioNote note)
-    {
-        //String currentNote = note.getFileName();
-        //playFab.callOnClick();
-        startPlaying(note.getFileName());
-    }
 
 
     public class TimerForRecorder extends AsyncTask<String, Integer, String> {
@@ -566,6 +561,12 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity{
 
 
 
+    }
+
+    private void addAudioNote(AudioNote audioNote)
+    {
+        audioNotes.add(audioNote);
+        mAdapter.notifyItemInserted(audioNotes.size() - 1);
     }
 
 }

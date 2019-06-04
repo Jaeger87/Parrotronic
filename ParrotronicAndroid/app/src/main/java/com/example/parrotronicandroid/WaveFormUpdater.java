@@ -9,9 +9,9 @@ public class WaveFormUpdater implements Runnable{
     private static final String TAG = "WaveFormUpdater";
     private MediaPlayer player;
     private Handler mWaveFormUpdateHandler;
-    PlayerVisualizerView playerVisualizerView;
-    AudioNote note;
-    BTHeadActivity activity;
+    private PlayerVisualizerView playerVisualizerView;
+    private AudioNote note;
+    private BTHeadActivity activity;
 
 
 
