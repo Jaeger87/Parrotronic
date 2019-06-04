@@ -27,13 +27,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.parrotronicandroid.utilities.Constants;
+import com.example.parrotronicandroid.utilities.StaticMethods;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Timer;
@@ -70,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     private Handler mWaveFormUpdateHandler;
 
-    private AudioNote audioNote;
 
     private List<AudioNote> audioNotes;
     private AudioNoteAdapter mAdapter;
@@ -79,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     private BluetoothConnectionService mBluetoothConnectionHead;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothDevice mBTDeviceHead;
+
+    private Gson gson;
 
     private Executor myExecutor;
 
@@ -153,6 +161,26 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
             }
         });
 
+        gson = new Gson();
+
+
+        String saveFilePath = this.getFilesDir() + Constants.SaveFileName;
+
+        try
+        {
+           String json = StaticMethods.readFile(saveFilePath, Charset.defaultCharset());
+           Type gsonType = new TypeToken<ArrayList<AudioNote>>(){}.getType();
+           audioNotes = gson.fromJson(json, gsonType);
+
+           waveform.updateVisualizer(convertBytes(audioNotes.get(audioNotes.size() -1 ).getAmplitudeGraphicList()));
+        }
+
+        catch (IOException e)
+        {
+            audioNotes = new ArrayList<>();
+        }
+
+        mAdapter = new AudioNoteAdapter(audioNotes, this,this);
 
         connectionBluetooth();
 
@@ -301,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
 
                 mWaveFormUpdateHandler = new Handler();
-                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this, waveform);
+                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNotes.get(audioNotes.size() - 1), this, waveform);//todo qui andrà tolto size - 1
 
                 mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 200);
 
@@ -334,9 +362,11 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 
-        audioNote = new AudioNote(getExternalCacheDir().getAbsolutePath() + "/audiorecordtest.3gp");
+        final AudioNote noteToRecorder = new AudioNote(getExternalCacheDir().getAbsolutePath() + "/" + System.currentTimeMillis() + ".3gp");
 
-        recorder.setOutputFile(audioNote.getFileName());
+        audioNotes.add(noteToRecorder);
+
+        recorder.setOutputFile(audioNotes.get(audioNotes.size() - 1).getFileName());
 
         recorder.setAudioSamplingRate(22050);
         recorder.setAudioEncodingBitRate(128000);
@@ -355,14 +385,14 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
                         int amplitude = recorder.getMaxAmplitude();
                        // Log.d(TAG, "" + amplitude);
                         //Log.i(TAG, "" + map(amplitude, 0, 32762,0,255));
-                        audioNote.addToAmplitudeGraphicList((byte)map(amplitude, 0, 32762,0,255));
-                        audioNote.addToAmplitudeAnalogicList((int)map(amplitude,0,32762,0,1023));
+                        noteToRecorder.addToAmplitudeGraphicList((byte)map(amplitude, 0, 32762,0,255));
+                        noteToRecorder.addToAmplitudeAnalogicList((int)map(amplitude,0,32762,0,1023));
                     }
                 });
             }
         },amplitudeDelay,amplitudePeriod);
 
-        timeTask = new TimerForRecorder(audioNote);
+        timeTask = new TimerForRecorder(noteToRecorder);
         timeTask.executeOnExecutor(myExecutor);
 
         try {
@@ -395,8 +425,10 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         timeTask = null;
 
-        waveform.updateVisualizer(convertBytes(audioNote.getAmplitudeGraphicList()));
+        waveform.updateVisualizer(convertBytes(audioNotes.get(audioNotes.size() - 1).getAmplitudeGraphicList())); //todo qui andrà tolto size - 1
 
+
+        saveMe();
     }
 
 
@@ -474,7 +506,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         View.OnClickListener clicker = new View.OnClickListener() {
             public void onClick(View v) {
-                onPlay(mStartPlaying, audioNote);
+                onPlay(mStartPlaying, audioNotes.get(audioNotes.size() - 1)); //todo qui tutta la classe sparisce
                 if (mStartPlaying) {
                     playFab.setImageResource(R.drawable.ic_pause);
                 } else {
@@ -567,6 +599,20 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     {
         audioNotes.add(audioNote);
         mAdapter.notifyItemInserted(audioNotes.size() - 1);
+    }
+
+    private void saveMe()
+    {
+        String json = gson.toJson(audioNotes);
+
+        try (PrintWriter out = new PrintWriter(this.getFilesDir() + Constants.SaveFileName)) {
+            out.println(json);
+        }
+
+        catch (FileNotFoundException fnf)
+        {
+
+        }
     }
 
 }

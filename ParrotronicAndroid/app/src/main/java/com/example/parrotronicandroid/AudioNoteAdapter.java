@@ -3,7 +3,9 @@ package com.example.parrotronicandroid;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import static com.example.parrotronicandroid.utilities.StaticMethods.convertByte
 
 public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.ViewHolder>{
 
+    private static final String TAG = "AudioAdapter";
 
     private List<AudioNote> mData;
     private LayoutInflater mInflater;
@@ -54,6 +57,7 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
         PlayerVisualizerView playerVisualizerView;
         TextView durateTextView;
         FloatingActionButton playFab;
+        CardView voiceCard;
 
         PlayButton playButton;
 
@@ -64,7 +68,15 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
             playFab = itemView.findViewById(R.id.playFab);
             durateTextView = itemView.findViewById(R.id.durataVoice);
             playerVisualizerView = itemView.findViewById(R.id.waveform);
+            voiceCard.findViewById(R.id.voiceCard);
             playButton = new PlayButton(playFab);
+
+            voiceCard.setOnLongClickListener(new View.OnLongClickListener() {
+                public boolean onLongClick(View v) {
+                    Log.d(TAG, "lungo click"); //TODO pop up
+                    return true;
+                }
+            });
         }
 
         void bindAudioNote(AudioNote audioNote)
