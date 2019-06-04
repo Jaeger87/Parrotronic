@@ -51,10 +51,37 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
         return mData.size();
     }
 
+    public void stopPressed()
+    {
+
+        if(!currentViewHolderPlaying.playButton.mStartPlaying) {
+            currentViewHolderPlaying.playButton.mStartPlaying = false;
+            currentViewHolderPlaying.playFab.callOnClick();
+        }
+        currentViewHolderPlaying.waveform.updatePlayerPercent(0);
+    }
+
+    public void audioNoteFinished()
+    {
+        currentViewHolderPlaying.playFab.setImageResource(R.drawable.ic_play);
+        currentViewHolderPlaying.playButton.mStartPlaying = true;
+    }
+
+    public AudioNote getCurrentAudioNote()
+    {
+        return currentViewHolderPlaying.audioNote;
+    }
+
+
+    public PlayerVisualizerView getCurrentWaveForm()
+    {
+        return currentViewHolderPlaying.waveform;
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder{
 
         AudioNote audioNote;
-        PlayerVisualizerView playerVisualizerView;
+        PlayerVisualizerView waveform;
         TextView durateTextView;
         FloatingActionButton playFab;
         CardView voiceCard;
@@ -67,8 +94,8 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
 
             playFab = itemView.findViewById(R.id.playFab);
             durateTextView = itemView.findViewById(R.id.durataVoice);
-            playerVisualizerView = itemView.findViewById(R.id.waveform);
-            voiceCard.findViewById(R.id.voiceCard);
+            waveform = itemView.findViewById(R.id.waveform);
+            voiceCard = itemView.findViewById(R.id.voiceCard);
             playButton = new PlayButton(playFab);
 
             voiceCard.setOnLongClickListener(new View.OnLongClickListener() {
@@ -83,14 +110,23 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
         {
             this.audioNote = audioNote;
             durateTextView.setText(audioNote.getDurata());
-            playerVisualizerView.updateVisualizer(convertBytes(audioNote.getAmplitudeGraphicList()));
+            waveform.updateVisualizer(convertBytes(audioNote.getAmplitudeGraphicList()));
+
         }
 
 
         class PlayButton{
             boolean mStartPlaying = true;
+            ViewHolder parent;
             View.OnClickListener clicker = new View.OnClickListener() {
                 public void onClick(View v) {
+
+                    if(currentViewHolderPlaying != parent)
+                    {
+
+                        currentViewHolderPlaying = parent;//todo fare qualcosa qui
+                    }
+
                     activity.onPlay(mStartPlaying, audioNote);
                     if (mStartPlaying) {
                         playFab.setImageResource(R.drawable.ic_pause);

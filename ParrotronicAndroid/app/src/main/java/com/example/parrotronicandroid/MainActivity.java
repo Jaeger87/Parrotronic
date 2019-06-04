@@ -17,7 +17,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -54,7 +55,6 @@ import static com.example.parrotronicandroid.utilities.StaticMethods.convertByte
 public class MainActivity extends AppCompatActivity implements BTHeadActivity, PlayerActivity{
 
     private RecordButton recordButton = null;
-    private PlayButton   playButton = null;
 
     private MediaRecorder recorder = null;
     private MediaPlayer player = null;
@@ -102,17 +102,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     @ViewById(R.id.micfab)
     FloatingActionButton micFab;
 
-    @ViewById(R.id.playFab)
-    FloatingActionButton playFab;
-
-    @ViewById(R.id.durataVoice)
-    TextView durataVoice;
-
-    @ViewById(R.id.voiceCard)
-    CardView voiceCard;
-
-    @ViewById(R.id.waveform)
-    PlayerVisualizerView waveform;
+    @ViewById(R.id.recyclerAudio)
+    protected RecyclerView audioNotesContainer;
 
 
     @AfterViews
@@ -149,17 +140,9 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         recordButton = new RecordButton(this, micFab);
 
-        playButton = new PlayButton(this, playFab);
 
         myExecutor = Executors.newFixedThreadPool(7);
 
-
-        voiceCard.setOnLongClickListener(new View.OnLongClickListener() {
-            public boolean onLongClick(View v) {
-                Log.d(TAG, "lungo click"); //TODO pop up
-                return true;
-            }
-        });
 
         gson = new Gson();
 
@@ -171,8 +154,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
            String json = StaticMethods.readFile(saveFilePath, Charset.defaultCharset());
            Type gsonType = new TypeToken<ArrayList<AudioNote>>(){}.getType();
            audioNotes = gson.fromJson(json, gsonType);
-
-           waveform.updateVisualizer(convertBytes(audioNotes.get(audioNotes.size() -1 ).getAmplitudeGraphicList()));
+           //waveform.updateVisualizer(convertBytes(audioNotes.get(audioNotes.size() -1 ).getAmplitudeGraphicList()));
         }
 
         catch (IOException e)
@@ -182,6 +164,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         mAdapter = new AudioNoteAdapter(audioNotes, this,this);
 
+        audioNotesContainer.setLayoutManager(new LinearLayoutManager(this));
+        audioNotesContainer.setAdapter(mAdapter);
         connectionBluetooth();
 
     }
@@ -246,12 +230,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         }
 
         if (player != null) {
-            if(!playButton.mStartPlaying) {
-                playButton.mStartPlaying = false;
-                playFab.callOnClick();
-            }
             stopPlaying();
-
         }
     }
 
@@ -299,18 +278,18 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     public void onPlay(boolean start, AudioNote audioNote) {
         if (start) {
             micFab.setImageResource(R.drawable.ic_stop);
-            startPlaying(audioNote.getFileName());
+            startPlaying(audioNote);
         } else {
             pausePlaying();
         }
     }
 
-    private void startPlaying(String filename) {
+    private void startPlaying(AudioNote audioNote) {
 
         if(player == null) {
             player = new MediaPlayer();
             try {
-                player.setDataSource(filename);
+                player.setDataSource(audioNote.getFileName());
                 player.prepare();
 
 
@@ -318,18 +297,17 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
                     @Override
                     public void onCompletion(MediaPlayer mp) {
 
-                        playFab.setImageResource(R.drawable.ic_play);
+
                         // stop streaming vocal note
                         if (player != null) {
                             stopPlaying();
                         }
-                        playButton.mStartPlaying = true;
+                        mAdapter.audioNoteFinished();
                     }
                 });
 
-
                 mWaveFormUpdateHandler = new Handler();
-                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNotes.get(audioNotes.size() - 1), this, waveform);//todo qui andrà tolto size - 1
+                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this, mAdapter.getCurrentWaveForm());//todo qui andrà tolto size - 1
 
                 mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 200);
 
@@ -343,12 +321,12 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     public void stopPlaying() {
         if(player != null) {
-            mWaveFormUpdateHandler.removeCallbacks(waveFormUpdater);
+            mAdapter.stopPressed();
+            mWaveFormUpdateHandler.removeCallbacks(waveFormUpdater);//todo spostare in adapter
             player.stop();
             player.release();
             player = null;
             micFab.setImageResource(R.drawable.ic_mic);
-            waveform.updatePlayerPercent(0);
         }
     }
 
@@ -357,6 +335,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         micFab.setImageResource(R.drawable.ic_mic);
     }
 
+
+    private AudioNote currentAudioNoteInRecording;
     private void startRecording() {
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -364,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         final AudioNote noteToRecorder = new AudioNote(getExternalCacheDir().getAbsolutePath() + "/" + System.currentTimeMillis() + ".3gp");
 
-        audioNotes.add(noteToRecorder);
+        currentAudioNoteInRecording = noteToRecorder;
 
         recorder.setOutputFile(audioNotes.get(audioNotes.size() - 1).getFileName());
 
@@ -425,7 +405,9 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         timeTask = null;
 
-        waveform.updateVisualizer(convertBytes(audioNotes.get(audioNotes.size() - 1).getAmplitudeGraphicList())); //todo qui andrà tolto size - 1
+        addAudioNote(currentAudioNoteInRecording);
+
+        //waveform.updateVisualizer(convertBytes(audioNotes.get(audioNotes.size() - 1).getAmplitudeGraphicList())); //todo qui andrà tolto size - 1
 
 
         saveMe();
@@ -471,19 +453,14 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         View.OnClickListener clicker = new View.OnClickListener() {
             public void onClick(View v) {
 
-                if(!playButton.mStartPlaying)
+                if(player != null)
                 {
                     stopPlaying();
-
-                    playFab.setImageResource(R.drawable.ic_play);
-                    playButton.mStartPlaying = !playButton.mStartPlaying;
                     return;
                 }
 
 
                 onRecord(mStartRecording);
-
-
 
                 if (mStartRecording) {
                     micFab.setImageResource(R.drawable.ic_stop);
@@ -495,29 +472,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         };
 
         public RecordButton(Context ctx, FloatingActionButton button) {
-            this.ctx = ctx;
-            button.setOnClickListener(clicker);
-        }
-    }
-
-    class PlayButton{
-        boolean mStartPlaying = true;
-        Context ctx;
-
-        View.OnClickListener clicker = new View.OnClickListener() {
-            public void onClick(View v) {
-                onPlay(mStartPlaying, audioNotes.get(audioNotes.size() - 1)); //todo qui tutta la classe sparisce
-                if (mStartPlaying) {
-                    playFab.setImageResource(R.drawable.ic_pause);
-                } else {
-                    playFab.setImageResource(R.drawable.ic_play);
-                }
-                mStartPlaying = !mStartPlaying;
-
-            }
-        };
-
-        public PlayButton(Context ctx, FloatingActionButton button) {
             this.ctx = ctx;
             button.setOnClickListener(clicker);
         }
@@ -588,7 +542,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         @Override
         protected void onPostExecute(String result) {
             audioNote.setDurata(result);
-            durataVoice.setText(audioNote.getDurata());
+            //durataVoice.setText(audioNote.getDurata());
         }
 
 
