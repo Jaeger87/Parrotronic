@@ -62,4 +62,9 @@ public class AudioNote {
     public void setDurata(String durata) {
         this.durata = durata;
     }
+
+    public int getMaxAnalogicValue()
+    {
+        return amplitudeAnalogicList.stream().reduce(Integer::max).get();
+    }
 }
