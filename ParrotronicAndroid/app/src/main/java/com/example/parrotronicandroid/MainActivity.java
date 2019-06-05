@@ -546,6 +546,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     @Override
     public void deleteNote(int indexNote) {
+        //Todo cancellare file
         audioNotes.remove(indexNote);
         mAdapter.notifyItemRemoved(indexNote);
     }

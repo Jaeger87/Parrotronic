@@ -1,6 +1,8 @@
 package com.example.parrotronicandroid;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.CardView;
@@ -24,6 +26,8 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
 
     private PlayerActivity activity;
 
+    private Context context;
+
     private ViewHolder currentViewHolderPlaying;
 
     public AudioNoteAdapter(List<AudioNote> mData, PlayerActivity activity, Context context)
@@ -31,6 +35,7 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
         this.mInflater = LayoutInflater.from(context);
         this.mData = mData;
         this.activity = activity;
+        this.context = context;
     }
 
 
@@ -43,7 +48,7 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        viewHolder.bindAudioNote(mData.get(i));
+        viewHolder.bindAudioNote(mData.get(i), i);
     }
 
     @Override
@@ -79,6 +84,39 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
         return currentViewHolderPlaying.waveform;
     }
 
+    private AlertDialog AskOption(int index)
+    {
+        AlertDialog myQuittingDialogBox =new AlertDialog.Builder(context)
+                //set message, title, and icon
+                .setTitle("Delete")
+                .setMessage("Do you want to Delete")
+                .setIcon(R.drawable.delete)
+
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Log.d(TAG, ""+ index);
+                        activity.deleteNote(index);
+                        dialog.dismiss();
+                    }
+
+                })
+
+
+
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        dialog.dismiss();
+
+                    }
+                })
+                .create();
+        return myQuittingDialogBox;
+
+    }
+
+
     public class ViewHolder extends RecyclerView.ViewHolder{
 
         AudioNote audioNote;
@@ -87,33 +125,34 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
         FloatingActionButton playFab;
         CardView voiceCard;
 
+
         PlayButton playButton;
 
         ViewHolder(View itemView) {
             super(itemView);
-
-
             playFab = itemView.findViewById(R.id.playFab);
             durateTextView = itemView.findViewById(R.id.durataVoice);
             waveform = itemView.findViewById(R.id.waveform);
             voiceCard = itemView.findViewById(R.id.voiceCard);
             playButton = new PlayButton(playFab, this);
 
-            voiceCard.setOnLongClickListener(new View.OnLongClickListener() {
-                public boolean onLongClick(View v) {
-                    Log.d(TAG, "lungo click"); //TODO pop up
-                    return true;
-                }
-            });
+
         }
 
-        void bindAudioNote(AudioNote audioNote)
+        void bindAudioNote(AudioNote audioNote, int index)
         {
             this.audioNote = audioNote;
 
             durateTextView.setText(audioNote.getDurata());
             waveform.updateVisualizer(convertBytes(audioNote.getAmplitudeGraphicList()));
 
+            voiceCard.setOnLongClickListener(new View.OnLongClickListener() {
+                public boolean onLongClick(View v) {
+                    AlertDialog diaBox = AskOption(index);
+                    diaBox.show();
+                    return true;
+                }
+            });
         }
 
 
