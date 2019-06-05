@@ -32,7 +32,7 @@
         android:id="@+id/ManualText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:text="Manual mode"
         app:layout_constraintLeft_toLeftOf="@id/guidelineHalfDisplay"
         app:layout_constraintTop_toBottomOf="@+id/eyesSwitch" />
@@ -42,7 +42,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="14dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:max="1023"
@@ -76,7 +76,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.3" />
+        app:layout_constraintGuide_percent="0.28" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guidelineHalfDisplay"
@@ -103,7 +103,8 @@
         app:cardCornerRadius="8dp"
         app:layout_constraintBottom_toTopOf="@+id/micfab"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guidelineAudioZone">
+        app:layout_constraintTop_toBottomOf="@id/guidelineAudioZone"
+        android:paddingBottom="8dp">
 
 
         <android.support.v7.widget.RecyclerView

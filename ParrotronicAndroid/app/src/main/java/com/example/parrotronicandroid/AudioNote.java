@@ -10,7 +10,6 @@ public class AudioNote {
     private ArrayList<Byte> amplitudeGraphicList;
     private ArrayList<Integer> amplitudeAnalogicList;
 
-
     private String durata;
 
     public AudioNote()

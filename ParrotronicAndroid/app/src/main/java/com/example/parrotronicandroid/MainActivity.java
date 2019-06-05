@@ -77,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     private Handler mWaveFormUpdateHandler;
 
-
     private List<AudioNote> audioNotes;
     private AudioNoteAdapter mAdapter;
 
@@ -140,12 +139,9 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         recordButton = new RecordButton(this, micFab);
 
-
         myExecutor = Executors.newFixedThreadPool(7);
 
-
         gson = new Gson();
-
 
         String saveFilePath = this.getFilesDir() + Constants.SaveFileName;
 
@@ -169,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         connectionBluetooth();
 
     }
-
 
     private void connectionBluetooth()
     {
@@ -253,16 +248,17 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         if(timeTask != null)
             timeTask.cancel(true);
 
-        unregisterReceiver(mBroadcastReceiver1);
-        unregisterReceiver(mReceiver);
-        mBluetoothConnectionHead.stopClient();
+        if(mBluetoothConnectionHead!= null) {
+            unregisterReceiver(mBroadcastReceiver1);
+            unregisterReceiver(mReceiver);
+            mBluetoothConnectionHead.stopClient();
+        }
     }
 
 
 
     private void eyesSwitchPressed(boolean isChecked)
     {
-        Toast.makeText(this, "premuto " + isChecked, Toast.LENGTH_LONG).show();
         sendToHeadEyes(isChecked);
     }
 
@@ -283,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
             pausePlaying();
         }
     }
+
 
     private void startPlaying(AudioNote audioNote) {
 
@@ -307,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
                 });
 
                 mWaveFormUpdateHandler = new Handler();
-                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this, mAdapter.getCurrentWaveForm());//todo qui andrà tolto size - 1
+                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this, mAdapter.getCurrentWaveForm());
 
                 mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 200);
 
@@ -322,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     public void stopPlaying() {
         if(player != null) {
             mAdapter.stopPressed();
-            mWaveFormUpdateHandler.removeCallbacks(waveFormUpdater);//todo spostare in adapter
+            mWaveFormUpdateHandler.removeCallbacks(waveFormUpdater);
             player.stop();
             player.release();
             player = null;
@@ -346,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         currentAudioNoteInRecording = noteToRecorder;
 
-        recorder.setOutputFile(audioNotes.get(audioNotes.size() - 1).getFileName());
+        recorder.setOutputFile(noteToRecorder.getFileName());
 
         recorder.setAudioSamplingRate(22050);
         recorder.setAudioEncodingBitRate(128000);
@@ -372,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
             }
         },amplitudeDelay,amplitudePeriod);
 
-        timeTask = new TimerForRecorder(noteToRecorder);
+        timeTask = new TimerForRecorder(currentAudioNoteInRecording);
         timeTask.executeOnExecutor(myExecutor);
 
         try {
@@ -401,16 +398,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         timeTask.stopTimer();
         recorder.release();
         recorder = null;
-
-
         timeTask = null;
-
-        addAudioNote(currentAudioNoteInRecording);
-
-        //waveform.updateVisualizer(convertBytes(audioNotes.get(audioNotes.size() - 1).getAmplitudeGraphicList())); //todo qui andrà tolto size - 1
-
-
-        saveMe();
     }
 
 
@@ -541,11 +529,12 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         @Override
         protected void onPostExecute(String result) {
+            Log.d(TAG, result);
             audioNote.setDurata(result);
+            addAudioNote(audioNote);
+            saveMe();
             //durataVoice.setText(audioNote.getDurata());
         }
-
-
 
     }
 
@@ -553,6 +542,12 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     {
         audioNotes.add(audioNote);
         mAdapter.notifyItemInserted(audioNotes.size() - 1);
+    }
+
+    @Override
+    public void deleteNote(int indexNote) {
+        audioNotes.remove(indexNote);
+        mAdapter.notifyItemRemoved(indexNote);
     }
 
     private void saveMe()

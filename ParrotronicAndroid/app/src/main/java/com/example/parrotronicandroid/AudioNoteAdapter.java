@@ -53,12 +53,13 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
 
     public void stopPressed()
     {
-
-        if(!currentViewHolderPlaying.playButton.mStartPlaying) {
-            currentViewHolderPlaying.playButton.mStartPlaying = false;
-            currentViewHolderPlaying.playFab.callOnClick();
+        if(currentViewHolderPlaying != null ) {
+            if (!currentViewHolderPlaying.playButton.mStartPlaying) {
+                currentViewHolderPlaying.playButton.mStartPlaying = false;
+                currentViewHolderPlaying.playFab.callOnClick();
+            }
+            currentViewHolderPlaying.waveform.updatePlayerPercent(0);
         }
-        currentViewHolderPlaying.waveform.updatePlayerPercent(0);
     }
 
     public void audioNoteFinished()
@@ -96,7 +97,7 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
             durateTextView = itemView.findViewById(R.id.durataVoice);
             waveform = itemView.findViewById(R.id.waveform);
             voiceCard = itemView.findViewById(R.id.voiceCard);
-            playButton = new PlayButton(playFab);
+            playButton = new PlayButton(playFab, this);
 
             voiceCard.setOnLongClickListener(new View.OnLongClickListener() {
                 public boolean onLongClick(View v) {
@@ -109,6 +110,7 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
         void bindAudioNote(AudioNote audioNote)
         {
             this.audioNote = audioNote;
+
             durateTextView.setText(audioNote.getDurata());
             waveform.updateVisualizer(convertBytes(audioNote.getAmplitudeGraphicList()));
 
@@ -123,8 +125,8 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
 
                     if(currentViewHolderPlaying != parent)
                     {
-
-                        currentViewHolderPlaying = parent;//todo fare qualcosa qui
+                        activity.stopPlaying();
+                        currentViewHolderPlaying = parent;
                     }
 
                     activity.onPlay(mStartPlaying, audioNote);
@@ -138,8 +140,11 @@ public class AudioNoteAdapter extends RecyclerView.Adapter<AudioNoteAdapter.View
                 }
             };
 
-            public PlayButton(FloatingActionButton button) {
+
+
+            public PlayButton(FloatingActionButton button, ViewHolder parent) {
                 button.setOnClickListener(clicker);
+                this.parent = parent;
             }
         }
     }
