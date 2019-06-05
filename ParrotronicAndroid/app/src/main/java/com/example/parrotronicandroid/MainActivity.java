@@ -12,6 +12,8 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -89,6 +91,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     private Executor myExecutor;
 
+    private Vibrator vibe;
+
     @ViewById(R.id.mouthValueText)
     TextView mouthValueTextView;
 
@@ -106,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     @ViewById(R.id.recyclerAudio)
     protected RecyclerView audioNotesContainer;
+
 
 
     @AfterViews
@@ -138,7 +143,12 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
             }
         });
 
+
+
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+
+
+        vibe = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         recordButton = new RecordButton(this, micFab);
 
@@ -338,6 +348,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     private AudioNote currentAudioNoteInRecording;
     private void startRecording() {
+        vibe.vibrate(VibrationEffect.createOneShot(75, VibrationEffect.DEFAULT_AMPLITUDE));
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -557,7 +568,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     @Override
     public void deleteNote(int indexNote) {
-        //Todo cancellare file
 
         if(player != null)
             stopPlaying();
