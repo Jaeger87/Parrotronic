@@ -118,6 +118,26 @@
     </android.support.v7.widget.CardView>
 
 
+    <TextView
+        android:id="@+id/timerForRecording"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/backsquare"
+        android:textSize="16sp"
+        android:minEms="4"
+        android:maxEms="4"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingEnd="7dp"
+        android:paddingStart="8dp"
+        android:text="00:00"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/recycleCard"
+        app:layout_constraintStart_toStartOf="@id/beginbuttons"/>
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/micfab"
         android:layout_width="wrap_content"

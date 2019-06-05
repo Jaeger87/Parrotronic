@@ -25,7 +25,6 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.parrotronicandroid.utilities.Constants;
 import com.example.parrotronicandroid.utilities.StaticMethods;
@@ -36,6 +35,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -91,6 +91,9 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     @ViewById(R.id.mouthValueText)
     TextView mouthValueTextView;
+
+    @ViewById(R.id.timerForRecording)
+    TextView timerTextView;
 
     @ViewById(R.id.mouthBar)
     SeekBar mouthBar;
@@ -479,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
 
 
-    public class TimerForRecorder extends AsyncTask<String, Integer, String> {
+    public class TimerForRecorder extends AsyncTask<String, String, String> {
 
         private AudioNote audioNote;
         private boolean stop = false;
@@ -492,6 +495,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            timerTextView.setText("00:00");
+            timerTextView.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -511,8 +516,15 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
                 seconds = (int) timePassed % 60;
                 minutes = (int) timePassed / 60;
 
+                publishProgress(printNumberForTimer(minutes) + ":" + printNumberForTimer(seconds));
             }
             return (printNumberForTimer(minutes) + ":" + printNumberForTimer(seconds));
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values)
+        {
+            timerTextView.setText(values[0]);
         }
 
         private String printNumberForTimer(int n)
@@ -529,11 +541,9 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
         @Override
         protected void onPostExecute(String result) {
-            Log.d(TAG, result);
+            timerTextView.setVisibility(View.GONE);
             audioNote.setDurata(result);
             addAudioNote(audioNote);
-            saveMe();
-            //durataVoice.setText(audioNote.getDurata());
         }
 
     }
@@ -542,13 +552,21 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     {
         audioNotes.add(audioNote);
         mAdapter.notifyItemInserted(audioNotes.size() - 1);
+        saveMe();
     }
 
     @Override
     public void deleteNote(int indexNote) {
         //Todo cancellare file
+
+        if(player != null)
+            stopPlaying();
+
+        File f = new File(audioNotes.get(indexNote).getFileName());
+        f.delete();
         audioNotes.remove(indexNote);
         mAdapter.notifyItemRemoved(indexNote);
+        saveMe();
     }
 
     private void saveMe()
