@@ -328,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
                 });
 
                 mWaveFormUpdateHandler = new Handler();
-                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this, mAdapter.getCurrentWaveForm());
+                waveFormUpdater = new WaveFormUpdater(player, mWaveFormUpdateHandler, audioNote, this, mAdapter.getCurrentWaveForm(), autoScalling);
 
                 mWaveFormUpdateHandler.postDelayed(waveFormUpdater, 200);
 
@@ -387,8 +387,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
                         int amplitude = recorder.getMaxAmplitude();
                        // Log.d(TAG, "" + amplitude);
                         //Log.i(TAG, "" + map(amplitude, 0, 32762,0,255));
-                        noteToRecorder.addToAmplitudeGraphicList((byte)map(amplitude, 0, 32762,0,255));
-                        noteToRecorder.addToAmplitudeAnalogicList((int)map(amplitude,0,32762,0,1023));
+                        noteToRecorder.addToAmplitudeGraphicList((byte)StaticMethods.map(amplitude, 0, 32762,0,255));
+                        noteToRecorder.addToAmplitudeAnalogicList((int)StaticMethods.map(amplitude,0,32762,0,1023));
                     }
                 });
             }
@@ -407,16 +407,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     }
 
 
-    //Thank you processing
-    static public final float map(float value,
-                                  float istart,
-                                  float istop,
-                                  float ostart,
-                                  float ostop) {
-        return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
-    }
-
-
     private void stopRecording() {
         _timer.cancel();
         recorder.stop();
@@ -425,8 +415,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         recorder = null;
         timeTask = null;
     }
-
-
 
 
     @Override

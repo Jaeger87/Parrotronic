@@ -4,6 +4,8 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.util.Log;
 
+import com.example.parrotronicandroid.utilities.StaticMethods;
+
 public class WaveFormUpdater implements Runnable{
 
     private static final String TAG = "WaveFormUpdater";
@@ -12,16 +14,20 @@ public class WaveFormUpdater implements Runnable{
     private PlayerVisualizerView playerVisualizerView;
     private AudioNote note;
     private BTHeadActivity activity;
+    private int maxValue = 1023;
 
 
 
-    public WaveFormUpdater(MediaPlayer player, Handler mWaveFormUpdateHandler, AudioNote note, BTHeadActivity activity, PlayerVisualizerView playerVisualizerView)
+    public WaveFormUpdater(MediaPlayer player, Handler mWaveFormUpdateHandler, AudioNote note, BTHeadActivity activity, PlayerVisualizerView playerVisualizerView, boolean autoScalling)
     {
         this.player = player;
         this.mWaveFormUpdateHandler = mWaveFormUpdateHandler;
         this.note = note;
         this.activity = activity;
         this.playerVisualizerView = playerVisualizerView;
+
+        if(autoScalling)
+            maxValue = note.getMaxAnalogicValue();
     }
 
 
@@ -33,8 +39,9 @@ public class WaveFormUpdater implements Runnable{
 
         int index = (int)((note.getAmplitudeAnalogicList().size() - 1 ) * percent );
 
-        activity.sendToHeadValueMouth(note.getAmplitudeAnalogicList().get(index),false);
+        activity.sendToHeadValueMouth((int)StaticMethods.map(note.getAmplitudeAnalogicList().get(index), 0, 1023, 0, maxValue),false);
         mWaveFormUpdateHandler.postDelayed(this, MainActivity.amplitudePeriod);
+
 
     }
 }
