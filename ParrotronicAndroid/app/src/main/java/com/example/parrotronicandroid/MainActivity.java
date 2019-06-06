@@ -414,6 +414,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         recorder.release();
         recorder = null;
         timeTask = null;
+        vibe.vibrate(VibrationEffect.createOneShot(75, VibrationEffect.DEFAULT_AMPLITUDE));
     }
 
 
