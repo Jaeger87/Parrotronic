@@ -51,7 +51,6 @@ import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static com.example.parrotronicandroid.utilities.StaticMethods.convertBytes;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity implements BTHeadActivity, PlayerActivity{
@@ -105,6 +104,11 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     @ViewById(R.id.eyesSwitch)
     Switch eyes;
 
+    @ViewById(R.id.autoScalingSwitch)
+    Switch autoScallingSwitch;
+
+    boolean autoScalling;
+
     @ViewById(R.id.micfab)
     FloatingActionButton micFab;
 
@@ -117,6 +121,13 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
     void AfterViews(){
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter((Constants.incomingMessageIntent)));
+
+        autoScallingSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                autoScalling = isChecked;
+            }
+        });
+
 
         eyes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
