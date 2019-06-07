@@ -140,7 +140,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mouthValueTextView.setText(""+ progress);
-                sendToHeadValueMouth(progress, true);
+                if(player == null)
+                    sendToHeadValueMouth(progress, true);
             }
 
             @Override
