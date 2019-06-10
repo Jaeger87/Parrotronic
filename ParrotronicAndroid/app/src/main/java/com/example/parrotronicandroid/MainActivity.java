@@ -67,9 +67,6 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     private static final String TAG = "MainParrot";
 
-    public static final int amplitudePeriod = 70;
-    public static final int amplitudeDelay = 170;
-
 
     private Timer _timer;
     private TimerForRecorder timeTask;
@@ -393,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
                     }
                 });
             }
-        },amplitudeDelay,amplitudePeriod);
+        },Constants.amplitudeDelay,Constants.amplitudePeriod);
 
         timeTask = new TimerForRecorder(currentAudioNoteInRecording);
         timeTask.executeOnExecutor(myExecutor);

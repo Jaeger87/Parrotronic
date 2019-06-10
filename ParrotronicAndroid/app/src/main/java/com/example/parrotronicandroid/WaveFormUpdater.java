@@ -2,8 +2,8 @@ package com.example.parrotronicandroid;
 
 import android.media.MediaPlayer;
 import android.os.Handler;
-import android.util.Log;
 
+import com.example.parrotronicandroid.utilities.Constants;
 import com.example.parrotronicandroid.utilities.StaticMethods;
 
 public class WaveFormUpdater implements Runnable{
@@ -40,7 +40,7 @@ public class WaveFormUpdater implements Runnable{
         int index = (int)((note.getAmplitudeAnalogicList().size() - 1 ) * percent );
 
         activity.sendToHeadValueMouth((int)StaticMethods.map(note.getAmplitudeAnalogicList().get(index), 0, 1023, 0, maxValue),false);
-        mWaveFormUpdateHandler.postDelayed(this, MainActivity.amplitudePeriod);
+        mWaveFormUpdateHandler.postDelayed(this, Constants.amplitudePeriod);
 
 
     }

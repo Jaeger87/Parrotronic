@@ -6,10 +6,10 @@ public class Constants {
     public static final String incomingMessageIntent = "incomingMessage";
     public static final int HeadID = 130;
     public static final String intentIDProp = "idBT";
+    public static final int amplitudePeriod = 70;
+    public static final int amplitudeDelay = 170;
     public static final String DEADBUTTONWORD = "ALIVE";
-    public static final String RegistrationString = "Recording";
     public static final String SaveFileName = "save.json";
-    public static final String MACFileName = "mac.json";
     public static final String mouthStatus = "MouthStatus";
     public static final char SEPARATOR = ';';
 }
