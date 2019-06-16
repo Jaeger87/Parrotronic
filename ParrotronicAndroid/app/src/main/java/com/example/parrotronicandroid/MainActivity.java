@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mouthValueTextView.setText(""+ progress);
-                if(player == null)
+                if(player == null && recorder == null)
                     sendToHeadValueMouth(progress, true);
             }
 
@@ -295,6 +295,8 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     public void onPlay(boolean start, AudioNote audioNote) {
         if (start) {
+            if(recorder != null)
+                stopRecording();
             micFab.setImageResource(R.drawable.ic_stop);
             startPlaying(audioNote);
         } else {

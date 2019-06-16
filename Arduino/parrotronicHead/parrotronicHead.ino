@@ -16,6 +16,7 @@ ServoValues mouthServo;
 
 Servo myservo;
 
+const int potpin = 0;
 const char eyesC = 'E';
 const char mouthC = 'M';
 
@@ -38,8 +39,8 @@ void setup() {
   pinMode(leftEyePin, OUTPUT);
 
 
-  mouthServo.minValue = 30;
-  mouthServo.maxValue = 70;
+  mouthServo.minValue = 35;
+  mouthServo.maxValue = 85;
   mouthServo.channel = 3;
   mouthServo.servoName = "Bocca";
   mouthServo.mirror = true;
@@ -54,6 +55,15 @@ void setup() {
 //E;1 accendi occhi
 
 void loop() {
+
+
+//potenziometro debug
+ // int val = analogRead(potpin);
+ // val = map(val, 0, 1023, 0, 180);
+ // if (val < mouthServo.maxValue && val > mouthServo.minValue) 
+  //myservo.write(val);   
+
+  
   String message = Serial.readStringUntil('\n');
   if (message.length() > 0)
   {

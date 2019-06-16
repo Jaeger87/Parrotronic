@@ -2,7 +2,7 @@ package com.example.parrotronicandroid.utilities;
 
 public class Constants {
 
-    public static final String macHeadBT = "00:14:03:06:80:64";
+    public static final String macHeadBT = "20:15:06:24:20:65";
     public static final String incomingMessageIntent = "incomingMessage";
     public static final int HeadID = 130;
     public static final String intentIDProp = "idBT";
