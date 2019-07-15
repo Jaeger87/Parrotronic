@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -166,18 +167,21 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         gson = new Gson();
 
         String saveFilePath = this.getFilesDir() + Constants.SaveFileName;
+        audioNotes = new ArrayList<>();
 
         try
         {
            String json = StaticMethods.readFile(saveFilePath, Charset.defaultCharset());
-           Type gsonType = new TypeToken<ArrayList<AudioNote>>(){}.getType();
-           audioNotes = gson.fromJson(json, gsonType);
-           //waveform.updateVisualizer(convertBytes(audioNotes.get(audioNotes.size() -1 ).getAmplitudeGraphicList()));
+           if(json != null && !json.equals(""))
+           {
+               Type gsonType = new TypeToken<ArrayList<AudioNote>>(){}.getType();
+               audioNotes = gson.fromJson(json, gsonType);
+           }
         }
 
         catch (IOException e)
         {
-            audioNotes = new ArrayList<>();
+            Log.e(TAG, "errore lettura file");
         }
 
         mAdapter = new AudioNoteAdapter(audioNotes, this,this);
@@ -359,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
 
     private AudioNote currentAudioNoteInRecording;
     private void startRecording() {
-        vibe.vibrate(VibrationEffect.createOneShot(75, VibrationEffect.DEFAULT_AMPLITUDE));
+        vibration();
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -414,9 +418,20 @@ public class MainActivity extends AppCompatActivity implements BTHeadActivity, P
         recorder.release();
         recorder = null;
         timeTask = null;
-        vibe.vibrate(VibrationEffect.createOneShot(75, VibrationEffect.DEFAULT_AMPLITUDE));
+        vibration();
     }
 
+
+    private void vibration()
+    {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            vibe.vibrate(75);
+        }
+        else
+        {
+            vibe.vibrate(VibrationEffect.createOneShot(75, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
+    }
 
     @Override
     public void sendToHeadValueMouth(int value, boolean thanos) {

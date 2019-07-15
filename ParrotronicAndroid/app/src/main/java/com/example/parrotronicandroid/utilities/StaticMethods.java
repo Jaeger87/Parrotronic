@@ -1,9 +1,13 @@
 package com.example.parrotronicandroid.utilities;
 
+import android.os.Build;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -40,8 +44,34 @@ public class StaticMethods {
     public static String readFile(String path, Charset encoding)
             throws IOException
     {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded, encoding);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+
+            File file = new File(path);
+
+            StringBuilder text = new StringBuilder();
+
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String line;
+
+                while ((line = br.readLine()) != null) {
+                    text.append(line);
+                    text.append('\n');
+                }
+                br.close();
+            }
+            catch (IOException e) {
+                return "";
+            }
+
+
+            return text.toString();
+        }
+
+        else {
+            byte[] encoded = Files.readAllBytes(Paths.get(path));
+            return new String(encoded, encoding);
+        }
     }
 
     //Thank you processing
